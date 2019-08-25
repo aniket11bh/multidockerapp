@@ -1,0 +1,26 @@
+sudo: required
+
+services:
+  - docker
+
+before_install:
+  - docker build -t aniket11bh/mreact-test -f ./client/Dev.Dockerfile .
+
+script:
+  - docker run -e CI=true aniket11bh/mreact-test npm run test
+
+after_success:
+  - docker build -t aniket11bh/multi-client ./client
+  - docker build -t aniket11bh/multi-nginx ./nginx
+  - docker build -t aniket11bh/multi-server ./server
+  - docker build -t aniket11bh/multi-worker ./worker
+  # Login to docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # Take those images and push them to docker hub
+  - docker push aniket11bh/multi-client
+  - docker push aniket11bh/multi-nginx
+  - docker push aniket11bh/multi-server
+  - docker push aniket11bh/multi-worker
+
+language: generic
+
